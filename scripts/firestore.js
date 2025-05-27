@@ -106,3 +106,7 @@ export async function sendTradeOfferToOwner(itemId, imageUrl, description) {
   });
 }
 
+export async function deleteItem(itemId) {
+  const ref = doc(db, 'items', itemId);
+  return await deleteDoc(ref);
+}

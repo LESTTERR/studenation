@@ -24,7 +24,8 @@
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--bg);
+     background: url('bb.jpg') no-repeat center center fixed;
+  background-size: cover;
   margin: 0;
   padding: 2rem;
   min-height: 100vh;

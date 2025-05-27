@@ -1,67 +1,68 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>StudentNation | Login</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudentNation | Welcome</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Roboto Mono', monospace;
+       background: url('bb.jpg') no-repeat center center fixed;
+  background-size: cover;
+      color: #ffffff;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hero {
+      text-align: center;
+      max-width: 700px;
+      padding: 2.5rem;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 20px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 0 30px rgba(0,0,0,0.3);
+    }
+    .hero h1 {
+      font-size: 3.2rem;
+      margin-bottom: 1.2rem;
+      letter-spacing: 1px;
+    }
+    .hero p {
+      font-size: 1.3rem;
+      margin-bottom: 2.2rem;
+      line-height: 1.6;
+    }
+    .btn-get-started {
+      padding: 14px 32px;
+      font-size: 1.1rem;
+      color: #ffffff;
+      background-color: #0077b6;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    .btn-get-started:hover {
+      background-color: #023e8a;
+      transform: scale(1.05);
+    }
+  </style>
 </head>
 <body>
-  <div class="auth-container">
-    <div class="auth-card">
-      <div class="auth-header">
-        <i class="fas fa-hands-helping logo-icon"></i>
-        <h1>StudentNation</h1>
-        <p>Donate & Exchange Platform for Students</p>
-      </div>
-      
-      <form id="loginForm" class="auth-form">
-        <h2>Login</h2>
-        <div class="form-group">
-          <label for="loginEmail">Email</label>
-          <input type="email" id="loginEmail" required>
-        </div>
-        <div class="form-group">
-          <label for="loginPassword">Password</label>
-          <input type="password" id="loginPassword" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Login</button>
-        <p class="auth-toggle">Don't have an account? <a href="#" id="showSignup">Sign up</a></p>
-      </form>
-      
-      <form id="signupForm" class="auth-form" style="display: none;">
-        <h2>Sign Up</h2>
-        <div class="form-group">
-          <label for="signupName">Full Name</label>
-          <input type="text" id="signupName" required>
-        </div>
-        <div class="form-group">
-          <label for="signupEmail">Email</label>
-          <input type="email" id="signupEmail" required>
-        </div>
-        <div class="form-group">
-          <label for="signupPassword">Password</label>
-          <input type="password" id="signupPassword" required>
-        </div>
-        <div class="form-group">
-          <label for="signupConfirmPassword">Confirm Password</label>
-          <input type="password" id="signupConfirmPassword" required>
-        </div>
-        <div class="form-group">
-          <label for="signupSchool">School/University</label>
-          <input type="text" id="signupSchool" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Create Account</button>
-        <p class="auth-toggle">Already have an account? <a href="#" id="showLogin">Login</a></p>
-      </form>
-      
-      <div id="authMessage" class="auth-message"></div>
-    </div>
+  <div class="hero">
+    <h1>Welcome to StudentNation</h1>
+    <p>A modern platform where students can <strong>donate</strong> and <strong>exchange</strong> items like books, uniforms, and more.</p>
+    <button class="btn-get-started" onclick="location.href='login.html'">Get Started</button>
   </div>
-
-  
-  <script type="module" src="./scripts/auth.js"></script>
 </body>
 </html>

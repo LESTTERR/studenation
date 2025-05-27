@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Favorites | StudentNation</title>
+  <link rel="stylesheet" href="home.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+  <script type="module" src="scripts/favorites.js" defer></script>
+</head>
+<body>
+  <nav class="vertical-nav">
+    <div class="nav-top">
+      <div class="app-name">StudentNation</div>
+      <input type="search" class="search-bar" placeholder="Search..." />
+      <ul class="nav-links">
+        <li><a href="home.html"><i class="fas fa-home"></i> Home</a></li>
+        <li><a href="notifications.html"><i class="fas fa-bell"></i> Notifications</a></li>
+        <li><a href="favorites.html" class="active"><i class="fas fa-star"></i> Favorites</a></li>
+        <li><a href="myrequests.html"><i class="fas fa-paper-plane"></i> My Requests</a></li>
+        <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
+      </ul>
+    </div>
+    <div class="nav-bottom">
+      <a href="profile.html"><i class="fas fa-user"></i> Profile</a>
+    </div>
+  </nav>
+  <main class="container">
+    <section>
+      <h2 class="section-title">My Favorites</h2>
+      <div class="items-grid" id="favoritesList"></div>
+    </section>
+  </main>
+  <div class="modal" id="itemDetailsModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="detailsTitle"></h3>
+        <button class="close-modal" id="closeDetailsModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <img id="detailsImage" src="" alt="" style="width:100%;max-height:250px;object-fit:cover;border-radius:8px;margin-bottom:16px;">
+        <div><strong>Category:</strong> <span id="detailsCategory"></span></div>
+        <div><strong>Type:</strong> <span id="detailsType"></span></div>
+        <div style="margin:12px 0;"><strong>Description:</strong>
+          <div id="detailsDescription" style="margin-top:4px;"></div>
+        </div>
+        <div id="detailsActions" class="details-actions"></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

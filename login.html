@@ -1,0 +1,44 @@
+<!-- login.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login | StudentNation</title>
+  <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+  <body>
+  <div class="auth-container">
+    <h1>Login</h1>
+    <p class="subtitle">Welcome back! Log in to continue</p>
+    <form id="loginForm">
+      <input type="email" id="email" placeholder="Email address" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <button type="submit">Log In</button>
+    </form>
+    <div class="link">
+      Don't have an account? <a href="register.html">Register</a>
+    </div>
+  </div>
+
+  <script type ="module">
+
+    // scripts/login.js
+import { loginUser } from './scripts/auth.js';
+
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value.trim();
+  try {
+    await loginUser(email, password);
+    alert('Login successful!');
+    window.location.href = 'home.html';
+  } catch (error) {
+    alert('Error: ' + error.message);
+  }
+});
+
+  </script>
+</body>
+</html>

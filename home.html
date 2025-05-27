@@ -1,0 +1,194 @@
+<!-- home.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>StudentNation | Home</title>
+  <link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+  />
+  <link rel="stylesheet" href="home.css" />
+
+  <script type="module" src="scripts/home.js" defer></script>
+</head>
+<body>
+  
+  <nav class="vertical-nav">
+    <div class="nav-top">
+      <div class="app-name">StudentNation</div>
+      <input type="search" class="search-bar" placeholder="Search..." />
+      <ul class="nav-links">
+        <li><a href="home.html" class="active"><i class="fas fa-home"></i> Home</a></li>
+        <li><a href="notifications.html"><i class="fas fa-bell"></i> Notifications</a></li>
+        <li><a href="favorites.html"><i class="fas fa-star"></i> Favorites</a></li>
+        <li><a href="myrequests.html"><i class="fas fa-paper-plane"></i> My Requests</a></li>
+        <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
+      </ul>
+    </div>
+    <div class="nav-bottom">
+      <a href="profile.html"><i class="fas fa-user"></i> Profile</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <h1>Share What You Have, Find What You Need</h1>
+        <p>StudentNation connects students to donate or exchange school items like books, uniforms, and supplies. Save money and reduce waste!</p>
+        <div class="cta-buttons">
+          <button class="btn btn-primary" id="postItemBtn">
+            <i class="fas fa-plus"></i> Post an Item
+          </button>
+          
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <main class="container">
+    <section>
+      <h2 class="section-title">Categories</h2>
+      <div class="categories" id="categoryList">
+        <div class="category-card" data-category="textbooks">
+          <div class="category-icon"><i class="fas fa-book"></i></div>
+          <div class="category-name">Textbooks</div>
+        </div>
+        <div class="category-card" data-category="uniforms">
+          <div class="category-icon"><i class="fas fa-tshirt"></i></div>
+          <div class="category-name">Uniforms</div>
+        </div>
+        <div class="category-card" data-category="electronics">
+          <div class="category-icon"><i class="fas fa-laptop"></i></div>
+          <div class="category-name">Electronics</div>
+        </div>
+        <div class="category-card" data-category="shoes">
+          <div class="category-icon"><i class="fas fa-shoe-prints"></i></div>
+          <div class="category-name">Shoes</div>
+        </div>
+        <div class="category-card" data-category="other">
+          <div class="category-icon"><i class="fas fa-box-open"></i></div>
+          <div class="category-name">Other</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">Recently Added</h2>
+      <!-- Add the filter dropdown here -->
+      <div style="margin-bottom: 1rem;">
+        <select id="filterCategory" class="form-control" style="max-width:220px;">
+          <option value="">All Categories</option>
+          <option value="textbooks">Textbooks</option>
+          <option value="uniforms">Uniforms</option>
+          <option value="electronics">Electronics</option>
+          <option value="shoes">Shoes</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="items-grid" id="itemList"></div>
+    </section>
+  </main>
+
+  <!-- Add the modal HTML here -->
+  <div class="modal" id="postItemModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Post an Item</h3>
+        <button class="close-modal">&times;</button>
+      </div>
+      
+      <form id="itemForm">
+        <div class="form-group">
+          <label for="title">Item Title</label>
+          <input type="text" id="title" class="form-control" placeholder="e.g. Calculus Textbook 8th Edition" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="category">Category</label>
+          <select id="category" class="form-control" required>
+            <option value="">Select a category</option>
+            <option value="textbooks">Textbooks</option>
+            <option value="uniforms">Uniforms</option>
+            <option value="electronics">Electronics</option>
+            <option value="supplies">Supplies</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="type">Listing Type</label>
+          <select id="type" class="form-control" required>
+            <option value="">Select listing type</option>
+            <option value="free">Free Donation</option>
+            <option value="exchange">For Exchange</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea id="description" class="form-control" placeholder="Describe the item's condition, what you're looking for in exchange, etc." required></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label>Upload Photos (Max 5)</label>
+          <div class="file-upload">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <div class="file-upload-text">
+              Drag & drop photos here or <span>browse</span>
+            </div>
+            <input type="file" id="itemPhotos" multiple accept="image/*" style="display: none;">
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline close-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Post Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="itemDetailsModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="detailsTitle"></h3>
+        <button class="close-modal" id="closeDetailsModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <img id="detailsImage" src="" alt="" style="width:100%;max-height:250px;object-fit:cover;border-radius:8px;margin-bottom:16px;">
+        <div><strong>Category:</strong> <span id="detailsCategory"></span></div>
+        <div><strong>Type:</strong> <span id="detailsType"></span></div>
+        <div style="margin:12px 0;"><strong>Description:</strong>
+          <div id="detailsDescription" style="margin-top:4px;"></div>
+        </div>
+        <div id="detailsActions" class="details-actions"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trade Offer Modal -->
+  <div class="modal" id="tradeOfferModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Send Trade Offer</h3>
+        <button class="close-modal" id="closeTradeOfferModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="file" id="tradeOfferImage" accept="image/*" />
+        <textarea id="tradeOfferDesc" placeholder="Describe your trade offer" style="width:100%;margin-top:10px;"></textarea>
+        <button class="btn btn-primary" id="sendTradeOfferBtn" style="margin-top:12px;">Send Offer</button>
+      </div>
+    </div>
+  </div>
+<div id="chatbot-icon">💬</div>
+<div id="chatbox">
+  <div id="messages"></div>
+  <div id="user-input">
+    <input type="text" id="prompt" placeholder="Ask anything..." />
+    <button id="send">➤</button>
+  </div>
+</div>
+
+</body>
+</html>

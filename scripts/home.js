@@ -6,6 +6,7 @@ import { handleLocalUpload } from './upload.js';
 const itemList = document.getElementById('itemList');
 const categoryCards = document.querySelectorAll('.category-card');
 const postForm = document.getElementById('itemForm');
+
 let currentUser = null;
 
 onAuthStateChanged(auth, (user) => {
@@ -23,6 +24,12 @@ function saveImageLocally(id, base64) {
 function getImageLocally(id) {
   return localStorage.getItem('item_image_' + id);
 }
+
+// home.js
+
+// Presumed to be defined elsewhere in your home.js
+// const tradeOfferModal = document.getElementById('tradeOfferModal');
+// let currentTradeItemId = null; // Or remove if data-attribute is solely used by submission logic
 
 // Show item details in modal
 function showItemDetails(item) {
@@ -51,7 +58,7 @@ function showItemDetails(item) {
     if (requestBtn) {
       requestBtn.onclick = async (e) => {
         e.stopPropagation();
-        await sendRequest(item.id);
+        await sendRequest(item.id); // Assuming sendRequest is defined and handles this correctly
         alert('Request sent!');
       };
     }
@@ -60,16 +67,33 @@ function showItemDetails(item) {
     if (tradeBtn) {
       tradeBtn.onclick = (e) => {
         e.stopPropagation();
-        currentTradeItemId = item.id;
+        // Store the item's ID on the modal itself using a data-attribute
+        // Make sure 'tradeOfferModal' is a valid reference to your modal element
+        if (tradeOfferModal) { // Ensure tradeOfferModal is accessible
+            tradeOfferModal.setAttribute('data-current-item-id', item.id);
+        } else {
+            console.error('tradeOfferModal element not found!');
+            // Handle the error appropriately, perhaps by not opening the modal
+            // or alerting the user.
+            return;
+        }
+        
+        // You might still set currentTradeItemId if other parts of your code (not related to sending the offer)
+        // immediately need it, but for sending the offer, the data-attribute is safer.
+        // currentTradeItemId = item.id; 
+        
         tradeOfferModal.classList.add('active');
+        // Moved this log inside so it accurately reflects when the trade modal is opened for THIS item.
+        console.log('Opening trade modal for item:', item.id, 'and setting data-current-item-id.'); 
       };
     }
 
+    // Favorite button logic (from your original file, ensure getFavorites/setFavorites are defined)
     const favoriteBtn = actionsDiv.querySelector('.favorite-btn');
     if (favoriteBtn) {
       favoriteBtn.onclick = (e) => {
         e.stopPropagation();
-        let favs = getFavorites();
+        let favs = getFavorites(); // Ensure getFavorites is defined
         if (favs.includes(item.id)) {
           favs = favs.filter(id => id !== item.id);
           e.currentTarget.classList.remove('active');
@@ -77,15 +101,16 @@ function showItemDetails(item) {
           favs.push(item.id);
           e.currentTarget.classList.add('active');
         }
-        setFavorites(favs);
+        setFavorites(favs); // Ensure setFavorites is defined
       };
       // Highlight if already favorite
-      if (getFavorites().includes(item.id)) {
+      if (getFavorites().includes(item.id)) { // Ensure getFavorites is defined
         favoriteBtn.classList.add('active');
       }
     }
   }
-  document.getElementById('itemDetailsModal').classList.add('active');
+  // This activates the details modal, not the trade offer modal.
+  document.getElementById('itemDetailsModal').classList.add('active'); 
 }
 
 // Close item details modal
@@ -209,15 +234,17 @@ postForm?.addEventListener('submit', async (e) => {
     saveImageLocally(id, base64);
 
     // Save item data to Firestore (without image, but with id)
-    const item = {
-      id,
-      title,
-      category,
-      type,
-      description,
-      createdAt: Date.now(),
-      owner: currentUser.uid
-    };
+   // In your postForm submit handler:
+const item = {
+  id,
+  title,
+  category,
+  type,
+  description,
+  createdAt: Date.now(),
+  owner: currentUser.uid,  // Make sure this is set
+  status: 'available'      // Add status field
+};
 
     await addItem(item);
     alert('Item posted!');
@@ -251,32 +278,86 @@ if (closeTradeOfferModal) {
   };
 }
 
+// home.js
+
+// Ensure tradeOfferModal is defined, e.g.:
+// const tradeOfferModal = document.getElementById('tradeOfferModal');
+// const sendTradeOfferBtn = document.getElementById('sendTradeOfferBtn');
+
 if (sendTradeOfferBtn) {
   sendTradeOfferBtn.onclick = async () => {
-    const fileInput = document.getElementById('tradeOfferImage');
-    const desc = document.getElementById('tradeOfferDesc').value;
-    let imageUrl = '';
-    const file = fileInput.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = async () => {
-        imageUrl = reader.result;
-        await sendTradeOfferToOwner(currentTradeItemId, imageUrl, desc);
-        alert('Trade offer sent!');
+    // Retrieve the itemId from the modal's data-attribute
+    const itemIdForOffer = tradeOfferModal.getAttribute('data-current-item-id'); //
+
+    if (!itemIdForOffer) { // Check the retrieved itemIdForOffer
+      alert("No item selected for trade or item ID is missing. Please close the modal and try again.");
+      return;
+    }
+
+    try {
+      const fileInput = document.getElementById('tradeOfferImage');
+      const desc = document.getElementById('tradeOfferDesc').value;
+      const file = fileInput.files[0];
+
+      // Log with the item ID retrieved from the attribute
+      console.log('Sending trade offer for item ID from attribute:', itemIdForOffer);
+
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = async () => {
+          try {
+            let offerImageUrl = reader.result; 
+
+            if (typeof offerImageUrl === 'undefined') {
+              console.warn('reader.result was undefined. Defaulting trade offer image URL to null.');
+              offerImageUrl = null;
+            }
+
+            console.log('Calling sendTradeOfferToOwner with (file):', { // Log with itemIdForOffer
+              itemId: itemIdForOffer,
+              imageUrl: offerImageUrl, 
+              description: desc || 'No description'
+            });
+            // Use itemIdForOffer when calling sendTradeOfferToOwner
+            await sendTradeOfferToOwner(itemIdForOffer, offerImageUrl, desc || 'No description');
+            alert('Trade offer sent successfully!');
+            tradeOfferModal.classList.remove('active');
+            fileInput.value = ''; 
+            document.getElementById('tradeOfferDesc').value = ''; 
+            tradeOfferModal.removeAttribute('data-current-item-id'); // Clean up attribute
+          } catch (error) {
+            console.error('Error sending trade offer (inside reader.onload):', error);
+            alert('Failed to send trade offer: ' + error.message);
+          }
+        };
+        reader.onerror = () => { // It's good practice to handle FileReader errors
+            console.error('FileReader failed to read the file.');
+            alert('Error reading file. Please try again.');
+        };
+        reader.readAsDataURL(file);
+      } else {
+        // If no file, pass an empty string or null for the imageUrl
+        console.log('Calling sendTradeOfferToOwner with (no file):', { // Log with itemIdForOffer
+          itemId: itemIdForOffer,
+          imageUrl: '',
+          description: desc || 'No description'
+        });
+        // Use itemIdForOffer when calling sendTradeOfferToOwner
+        await sendTradeOfferToOwner(itemIdForOffer, '', desc || 'No description');
+        alert('Trade offer sent successfully!');
         tradeOfferModal.classList.remove('active');
-        fileInput.value = '';
+        // fileInput.value = ''; // No file input to clear if there was no file
         document.getElementById('tradeOfferDesc').value = '';
-      };
-      reader.readAsDataURL(file);
-    } else {
-      await sendTradeOfferToOwner(currentTradeItemId, '', desc);
-      alert('Trade offer sent!');
-      tradeOfferModal.classList.remove('active');
-      fileInput.value = '';
-      document.getElementById('tradeOfferDesc').value = '';
+        tradeOfferModal.removeAttribute('data-current-item-id'); // Clean up attribute
+      }
+    } catch (error) {
+      console.error('Error in trade offer process (sendTradeOfferBtn.onclick):', error);
+      alert('An error occurred: ' + error.message);
     }
   };
 }
+
+
 
 const filterCategory = document.getElementById('filterCategory');
 if (filterCategory) {

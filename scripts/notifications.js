@@ -16,8 +16,9 @@ function renderNotifications(requests, itemsMap, usersMap) {
       <div class="notif-card" style="background:#fff;padding:1.2rem 1.5rem;margin-bottom:1.5rem;border-radius:10px;box-shadow:0 2px 8px #0001;">
         <div>
           <strong>${requester ? requester.email : req.requesterId}</strong>
-          has requested your item
-          <strong>${item ? item.title : req.requesterId}</strong>
+         ${item?.type === 'exchange' ? 'wants to trade for your item' : 'has requested your item'}
+<strong>${item ? item.title : 'an item'}</strong>
+
         </div>
         <div style="margin-top:10px;">
           <input type="text" class="meetup-message" id="msg-${req.id}" placeholder="Message (e.g. Meetup time/place)" style="width:70%;padding:6px;margin-bottom:8px;">
@@ -38,7 +39,8 @@ function renderNotifications(requests, itemsMap, usersMap) {
     }
 
     // If request has a trade offer, show view trade button
-    if (req.tradeOffer && req.tradeOffer.status === 'pending') {
+   if (req.tradeOffer && req.tradeOffer.imageUrl && req.tradeOffer.description) {
+
       notifDiv.innerHTML += `
         <button class="btn btn-primary btn-xs view-trade-btn" data-id="${req.id}" style="margin-left:8px;">
           <i class="fas fa-eye"></i> Show Item
@@ -70,36 +72,52 @@ function renderNotifications(requests, itemsMap, usersMap) {
       location.reload();
     };
   });
-  notifDiv.querySelectorAll('.view-trade-btn').forEach(btn => {
-    btn.onclick = () => {
-      const reqId = btn.dataset.id;
-      const req = requests.find(r => r.id === reqId);
-      const body = document.getElementById('tradeOfferBody');
-      body.innerHTML = `
-        <img src="${req.tradeOffer.imageUrl}" style="max-width:100%;border-radius:8px;">
-        <p style="margin-top:10px;"><strong>Description:</strong> ${req.tradeOffer.description}</p>
-        <button class="btn btn-success btn-xs accept-trade-btn" data-id="${reqId}">Accept</button>
-        <button class="btn btn-danger btn-xs decline-trade-btn" data-id="${reqId}">Decline</button>
-      `;
-      document.getElementById('viewTradeModal').classList.add('active');
-      document.getElementById('closeViewTradeModal').onclick = () => {
-        document.getElementById('viewTradeModal').classList.remove('active');
-      };
-      document.querySelector('.accept-trade-btn').onclick = async () => {
-        // Update request status to accepted, optionally add a meetup message
-        await updateTradeOfferStatus(reqId, 'accepted');
-        alert('Trade accepted!');
-        document.getElementById('viewTradeModal').classList.remove('active');
-        location.reload();
-      };
-      document.querySelector('.decline-trade-btn').onclick = async () => {
-        await updateTradeOfferStatus(reqId, 'declined');
-        alert('Trade declined.');
-        document.getElementById('viewTradeModal').classList.remove('active');
-        location.reload();
-      };
+ notifDiv.querySelectorAll('.view-trade-btn').forEach(btn => {
+  btn.onclick = () => {
+    const reqId = btn.dataset.id;
+    const req = requests.find(r => r.id === reqId);
+    const trade = req.tradeOffer || {};
+    const image = trade.imageUrl || '';
+    const desc = trade.description || 'No description provided.';
+    const body = document.getElementById('tradeOfferBody');
+
+body.innerHTML = `
+  <img src="${image}" style="max-width:100%;border-radius:8px;">
+  <p style="margin-top:10px;"><strong>Description:</strong> ${desc}</p>
+  <input type="text" id="tradeMsg-${reqId}" class="meetup-message" placeholder="Message (e.g. Meetup place/time)" style="width:100%;padding:6px;margin-top:10px;">
+  <div style="margin-top:10px;">
+    <button class="btn btn-success btn-xs accept-trade-btn" data-id="${reqId}">Accept</button>
+    <button class="btn btn-danger btn-xs decline-trade-btn" data-id="${reqId}">Decline</button>
+  </div>
+`;
+
+    
+
+    document.getElementById('viewTradeModal').classList.add('active');
+    document.getElementById('closeViewTradeModal').onclick = () => {
+      document.getElementById('viewTradeModal').classList.remove('active');
     };
-  });
+
+   document.querySelector('.accept-trade-btn').onclick = async () => {
+  const msg = document.getElementById(`tradeMsg-${reqId}`).value;
+  await updateTradeOfferStatus(reqId, 'accepted', msg || '');
+ 
+
+
+      alert('Trade accepted!');
+      document.getElementById('viewTradeModal').classList.remove('active');
+      location.reload();
+    };
+
+    document.querySelector('.decline-trade-btn').onclick = async () => {
+      await updateTradeOfferStatus(reqId, 'declined');
+      alert('Trade declined.');
+      document.getElementById('viewTradeModal').classList.remove('active');
+      location.reload();
+    };
+  };
+});
+
 }
 
 onAuthStateChanged(auth, async (user) => {
@@ -122,15 +140,3 @@ onAuthStateChanged(auth, async (user) => {
   renderNotifications(requests.filter(r => r.status === 'pending'), itemsMap, usersMap);
 });
 
-// Modal HTML (to be added in notifications.html):
-/*
-<div class="modal" id="viewTradeModal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3 class="modal-title">Trade Offer</h3>
-      <button class="close-modal" id="closeViewTradeModal">&times;</button>
-    </div>
-    <div class="modal-body" id="tradeOfferBody"></div>
-  </div>
-</div>
-*/

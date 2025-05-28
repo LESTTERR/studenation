@@ -2,6 +2,8 @@ import { auth } from './firebase.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js';
 import { getUserProfile, getRecentItems } from './firestore.js';
 import { deleteItem } from './firestore.js';
+import { getItemsByOwner } from './firestore.js';
+
 
 function getImageLocally(id) {
   return localStorage.getItem('item_image_' + id);
@@ -52,7 +54,8 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   // ✅ Add this to fetch and display user's own listings
-  const myItems = await getRecentItems(user.uid); // assumes this gets items by UID
+  const myItems = await getItemsByOwner(user.uid);
+   
   renderMyListings(myItems);
 
   document.getElementById('logoutBtn').addEventListener('click', async () => {

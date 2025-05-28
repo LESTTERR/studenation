@@ -6,15 +6,15 @@ import {
 const itemRef = collection(db, 'items');
 
 export async function addItem(item) {
-  return await addDoc(itemRef, item);
+  return await setDoc(doc(db, 'items', item.id), item); // Use custom ID
 }
+
 
 export async function getRecentItems() {
   const q = query(itemRef, orderBy('createdAt', 'desc'));
   const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => doc.data());
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
-
 export async function getItemsByCategory(category) {
   const ref = collection(db, 'items');
   const q = query(ref, where('category', '==', category), orderBy('createdAt', 'desc'));
@@ -85,28 +85,45 @@ export async function updateTradeOfferStatus(requestId, status, message = '') {
 }
 
 export async function sendTradeOfferToOwner(itemId, imageUrl, description) {
-  // Get the item to find the owner
-  const itemDoc = await getDoc(doc(collection(db, 'items'), itemId));
+  console.log('sendTradeOfferToOwner called with:', { itemId, imageUrl, description });
+  
+  const itemDoc = await getDoc(doc(db, 'items', itemId));
   const itemData = itemDoc.exists() ? itemDoc.data() : null;
-  if (!itemData) throw new Error('Item not found');
+  if (!itemData) {
+    console.error('Item not found:', itemId);
+    throw new Error('Item not found');
+  }
 
+  if (!itemData.owner) {
+    console.error('Item has no owner field:', itemData);
+    throw new Error('Item has no owner specified');
+  }
+
+  console.log('Creating trade offer from', auth.currentUser.uid, 'to', itemData.owner);
+  
   const ref = collection(db, 'requests');
-  return await addDoc(ref, {
+  const result = await addDoc(ref, {
     itemId,
-    ownerId: itemData.owner, // Make sure your item has an 'owner' field (UID)
+    ownerId: itemData.owner,
     requesterId: auth.currentUser.uid,
     type: 'exchange',
     status: 'pending',
     createdAt: Date.now(),
-    tradeOffer: {
-      imageUrl,
-      description,
-      status: 'pending'
-    }
+    tradeOfferImageUrl: imageUrl || null,
+    tradeOfferDescription: description || 'No description',
+    tradeOfferStatus: 'pending'
   });
+
+  console.log('Trade offer created with ID:', result.id);
+  return result;
 }
 
 export async function deleteItem(itemId) {
   const ref = doc(db, 'items', itemId);
   return await deleteDoc(ref);
+}
+export async function getItemsByOwner(uid) {
+  const q = query(itemRef, where('owner', '==', uid), orderBy('createdAt', 'desc'));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => doc.data());
 }

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campus Map | StudentNation</title>
+  <link rel="stylesheet" href="home.css" /> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+
+  <style>
+    /* Styles specific to the map feature - copied and adapted from your previous example */
+    /* General body/container might be in home.css, but ensure these complement them */
+    .map-page-container {
+      padding: 20px;
+      max-width: 1200px;
+      margin-left: 260px; /* Adjust if your nav width is different */
+      margin-top: 20px;
+    }
+
+    .section-title {
+      font-size: 1.8rem;
+      color: #333;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #4361ee;
+    }
+    
+    .card {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      padding: 25px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      margin-bottom: 30px;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .card h2, .card h3 {
+      color: #4361ee;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .card-icon {
+      font-size: 1.8rem;
+      color: #3a0ca3;
+    }
+    
+    .btn {
+      display: inline-block;
+      background: linear-gradient(to right, #4361ee, #3a0ca3);
+      color: white;
+      padding: 12px 25px;
+      border-radius: 30px;
+      text-decoration: none;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+    }
+    
+    .btn i {
+      font-size: 1.2rem;
+    }
+    
+    .btn-large {
+      padding: 15px 30px;
+      font-size: 1.1rem;
+    }
+    
+    .map-btn-container {
+      text-align: center;
+      margin: 20px 0;
+    }
+    
+    #map {
+      height: 450px; /* Adjusted height */
+      width: 100%;
+      border-radius: 15px;
+      margin-top: 20px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      display: none; /* Initially hidden */
+      border: 1px solid #e0e0e0;
+    }
+    
+    .map-container {
+      position: relative;
+    }
+    
+    .map-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.95); /* Slightly more opaque */
+      display: flex; /* Will be controlled by 'hidden' class */
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border-radius: 15px;
+      text-align: center;
+      padding: 20px;
+      z-index: 10;
+    }
+    
+    .map-overlay.hidden {
+      display: none;
+    }
+    
+    .map-overlay h3 {
+      margin-bottom: 15px;
+      color: #3a0ca3;
+    }
+
+    /* Responsive adjustments if needed */
+    @media (max-width: 768px) {
+      .map-page-container {
+        margin-left: 0; /* Adjust if nav becomes a top bar or hides */
+        padding: 15px;
+      }
+      #map {
+        height: 350px;
+      }
+    }
+  </style>
+</head>
+<body>
+  
+  <nav class="vertical-nav">
+    <div class="nav-top">
+      <div class="app-name">StudentNation</div>
+      <input type="search" class="search-bar" placeholder="Search..." />
+      <ul class="nav-links">
+        <li><a href="home.html"><i class="fas fa-home"></i> Home</a></li>
+        <li><a href="notifications.html"><i class="fas fa-bell"></i> Notifications</a></li>
+        <li><a href="favorites.html"><i class="fas fa-star"></i> Favorites</a></li>
+        <li><a href="myrequests.html"><i class="fas fa-paper-plane"></i> My Requests</a></li>
+        <li><a href="map.html" class="active"><i class="fas fa-map-marked-alt"></i> Campus Map</a></li> </ul>
+    </div>
+    <div class="nav-bottom" style="display: flex; align-items: center; justify-content: space-between; padding: 0 12px;">
+      <a href="profile.html" style="flex: 1;"><i class="fas fa-user"></i> Profile</a> <button id="logoutBtn" title="Logout" style="background: none; border: none; color: #fff; font-size: 1.2rem; cursor: pointer;">
+        <i class="fas fa-sign-out-alt"></i>
+      </button>
+    </div>
+  </nav>
+
+  <main class="map-page-container">
+    <section>
+      <h2 class="section-title"><i class="fas fa-map-signs"></i> Campus Exchange Locations</h2>
+      <div class="card">
+        <h3><i class="fas fa-info-circle card-icon"></i> Find Safe Spots</h3>
+        <p>Use this map to find approved and safe locations for exchanging items with other students on campus. Remember to always prioritize your safety.</p>
+        
+        <div class="map-btn-container">
+          <button id="showMapInfoBtn" class="btn btn-large">
+            <i class="fas fa-map-marked-alt"></i> Show Exchange Locations Info
+          </button>
+        </div>
+
+        <div class="map-container">
+          <div id="map"></div>
+          
+          <div id="mapOverlay" class="map-overlay hidden"> <h3><i class="fas fa-shield-alt"></i> Safe Exchange Zones</h3>
+            <p>These are designated areas for safe and convenient student exchanges. Click below to view them on the map.</p>
+            <button id="activateMapBtn" class="btn">
+              <i class="fas fa-map"></i> View Map Locations
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+        <div class="card">
+            <h3><i class="fas fa-handshake card-icon"></i> Exchange Guidelines</h3>
+            <ul style="list-style-type: disc; padding-left: 20px; margin-top: 10px;">
+                <li style="margin-bottom: 8px;">Always meet in well-lit, public campus areas.</li>
+                <li style="margin-bottom: 8px;">Consider informing a friend about your meetup.</li>
+                <li style="margin-bottom: 8px;">Inspect items thoroughly before completing an exchange.</li>
+                <li style="margin-bottom: 8px;">Be respectful and punctual.</li>
+            </ul>
+        </div>
+    </section>
+
+  </main>
+
+  <script>
+  // --- Google Maps Specific JavaScript ---
+  let map;
+  let mapsApiLoaded = false;
+
+  // Centering on Olongapo City (Approximate Coordinates)
+  const olongapoCityCenter = { lat: 14.8330, lng: 120.2830 }; 
+
+  // Define meetup exchange locations in Olongapo
+  const meetupLocations = [
+    { 
+      lat: 14.8300, 
+      lng: 120.2860, 
+      title: "Gordon College", 
+      description: "Main campus area, good for student meetups." 
+    },
+    { 
+      lat: 14.8260, 
+      lng: 120.2825, 
+      title: "Harbor Point Mall", 
+      description: "Popular mall, many public spaces for meetups." 
+    },
+    { 
+      lat: 14.8375, 
+      lng: 120.2911, 
+      title: "SM City Olongapo Central", 
+      description: "Well-known landmark with various meeting spots." 
+    },
+    { 
+      lat: 14.8313, 
+      lng: 120.2848, 
+      title: "Victory Liner Terminal (Olongapo)", 
+      description: "Bus terminal, convenient for those travelling." 
+    },
+    // You can keep other relevant campus locations from your previous list if desired
+    { 
+      lat: 14.8305, 
+      lng: 120.2858, 
+      title: "Gordon College - Main Gate", 
+      description: "Well-lit area near campus entrance." 
+    },
+    { 
+      lat: 14.8298, 
+      lng: 120.2865, 
+      title: "Gordon College - Library Entrance", 
+      description: "Meet by the main library steps." 
+    }
+  ];
+
+  function initMap() {
+    if (!document.getElementById("map")) {
+      console.error("Map element not found!");
+      return;
+    }
+
+    map = new google.maps.Map(document.getElementById("map"), {
+      // We'll set center initially, but fitBounds will likely adjust it
+      center: olongapoCityCenter, 
+      // Zoom will be set by fitBounds, but provide a default
+      zoom: 14, 
+      styles: [ 
+        {
+          featureType: "poi.business",
+          stylers: [{ visibility: "off" }]
+        },
+        {
+          featureType: "transit",
+          elementType: "labels.icon",
+          stylers: [{ visibility: "off" }]
+        }
+      ]
+    });
+
+    const infoWindow = new google.maps.InfoWindow();
+    const bounds = new google.maps.LatLngBounds(); // Create a new bounds object
+
+    meetupLocations.forEach(location => {
+      const marker = new google.maps.Marker({
+        position: { lat: location.lat, lng: location.lng },
+        map: map,
+        title: location.title,
+        icon: { 
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 8,
+          fillColor: "#4361ee", 
+          fillOpacity: 1,
+          strokeColor: "#ffffff",
+          strokeWeight: 2
+        }
+      });
+
+      marker.addListener("click", () => {
+        infoWindow.setContent(`
+          <div style="padding: 10px; max-width: 250px;">
+            <h4 style="margin: 0 0 8px; color: #3a0ca3; font-size: 1.1em;">${location.title}</h4>
+            <p style="margin: 0 0 5px; font-size: 0.9em;">${location.description}</p>
+            <p style="margin: 0; font-size: 0.8em; color: #555;">
+              <i class="fas fa-map-marker-alt"></i> Lat: ${location.lat.toFixed(4)}, Lng: ${location.lng.toFixed(4)}
+            </p>
+          </div>
+        `);
+        infoWindow.open(map, marker);
+      });
+      
+      // Extend the bounds to include each marker's position
+      bounds.extend(marker.getPosition());
+    });
+
+    // After adding all markers, fit the map to the bounds
+    if (meetupLocations.length > 0) {
+      map.fitBounds(bounds);
+    }
+    
+    // If there's only one marker, fitBounds might zoom in too much.
+    // You can add a check for this.
+    if (meetupLocations.length === 1) {
+        map.setCenter(meetupLocations[0]); // Center on the single marker
+        map.setZoom(15); // Set a reasonable zoom level
+    }
+
+
+  }
+
+  function loadGoogleMaps() {
+    if (mapsApiLoaded) {
+      if (typeof google !== 'undefined' && google.maps) {
+        if (!map && document.getElementById("map").style.display === 'block') initMap();
+      }
+      return;
+    }
+    const script = document.createElement('script');
+    // YOUR API KEY IS HERE - ENSURE IT IS SECURED
+    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyC-XylM8mfXC1v5eknddugykRkvMOjJDa4&callback=initMap&libraries=marker`;
+    script.defer = true;
+    script.async = true;
+    document.head.appendChild(script);
+    mapsApiLoaded = true;
+  }
+
+  // DOM elements for map interaction
+  const showMapInfoBtn = document.getElementById('showMapInfoBtn');
+  const activateMapBtn = document.getElementById('activateMapBtn');
+  const mapOverlay = document.getElementById('mapOverlay');
+  const mapElement = document.getElementById('map');
+
+  if (showMapInfoBtn && mapOverlay && activateMapBtn && mapElement) {
+    showMapInfoBtn.addEventListener('click', () => {
+      mapOverlay.classList.remove('hidden'); 
+    });
+    
+    activateMapBtn.addEventListener('click', () => {
+      mapOverlay.classList.add('hidden'); 
+      mapElement.style.display = 'block'; 
+      loadGoogleMaps(); 
+    });
+  } else {
+      console.error("One or more map control elements are missing from the DOM.");
+  }
+</script>
+</body>
+</html>

@@ -2,13 +2,10 @@ import { auth } from './firebase.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js';
 import { getRecentItems, sendRequestToOwner } from './firestore.js';
 
-function getImageLocally(id) {
-  return localStorage.getItem('item_image_' + id);
-}
-
 function getFavorites() {
   return JSON.parse(localStorage.getItem('favorites') || '[]');
 }
+
 function setFavorites(favs) {
   localStorage.setItem('favorites', JSON.stringify(favs));
 }
@@ -17,7 +14,9 @@ let currentUser = null;
 let allItems = [];
 
 function showItemDetails(item) {
-  const image = getImageLocally(item.id) || '';
+  // Use Cloudinary URL directly from the item object
+  const image = item.imageUrl || '';
+  
   document.getElementById('detailsTitle').textContent = item.title;
   document.getElementById('detailsImage').src = image;
   document.getElementById('detailsCategory').textContent = item.category;
@@ -32,12 +31,14 @@ function showItemDetails(item) {
       <button class="btn btn-primary btn-modal request-btn" data-id="${item.id}"><i class="fas fa-paper-plane"></i> Request</button>
       <button class="btn btn-favorite btn-modal favorite-btn" data-id="${item.id}" title="Remove from Favorites"><i class="fas fa-heart"></i> Favorite</button>
     `;
+    
     // Add event listeners
     actionsDiv.querySelector('.request-btn').onclick = async (e) => {
       e.stopPropagation();
       await sendRequest(item.id);
       alert('Request sent!');
     };
+    
     actionsDiv.querySelector('.favorite-btn').onclick = (e) => {
       e.stopPropagation();
       let favs = getFavorites();
@@ -52,6 +53,7 @@ function showItemDetails(item) {
       renderFavorites(getFavoriteItems());
       document.getElementById('itemDetailsModal').classList.remove('active');
     };
+    
     // Highlight if already favorite
     if (getFavorites().includes(item.id)) {
       actionsDiv.querySelector('.favorite-btn').classList.add('active');
@@ -68,23 +70,28 @@ function getFavoriteItems() {
 function renderFavorites(items) {
   const favoritesList = document.getElementById('favoritesList');
   favoritesList.innerHTML = '';
+  
   if (items.length === 0) {
     favoritesList.innerHTML = '<div style="padding:2rem;text-align:center;color:#888;">No favorites yet.</div>';
     return;
   }
+  
   items.forEach(item => {
-    const image = getImageLocally(item.id) || '';
+    // Use Cloudinary URL directly from the item object
+    const image = item.imageUrl || '';
+    
     const card = document.createElement('div');
     card.className = 'item-card';
     card.innerHTML = `
       <div class="item-badge">${item.type === 'exchange' ? 'For Exchange' : 'Free'}</div>
-      <div class="item-image"><img src="${image}" alt="${item.title}"></div>
+      <div class="item-image"><img src="${image}" alt="${item.title}" onerror="this.onerror=null;this.src='./assets/placeholder-image.png';"></div>
       <div class="item-info">
         <div class="item-category">${item.category}</div>
         <h3 class="item-title">${item.title}</h3>
         <div class="item-location"><i class="fas fa-map-marker-alt"></i> <span>StudentNation</span></div>
       </div>
     `;
+    
     card.addEventListener('click', () => showItemDetails(item));
     favoritesList.appendChild(card);
   });
@@ -94,8 +101,14 @@ function renderFavorites(items) {
 document.addEventListener('DOMContentLoaded', () => {
   const closeBtn = document.getElementById('closeDetailsModal');
   const modal = document.getElementById('itemDetailsModal');
-  if (closeBtn && modal) {
-    closeBtn.addEventListener('click', () => modal.classList.remove('active'));
+  
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      if (modal) modal.classList.remove('active');
+    });
+  }
+  
+  if (modal) {
     modal.addEventListener('click', (e) => {
       if (e.target === modal) modal.classList.remove('active');
     });
@@ -104,14 +117,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) return location.href = 'login.html';
+  
   currentUser = user;
-  allItems = await getRecentItems();
-  renderFavorites(getFavoriteItems());
+  
+  try {
+    allItems = await getRecentItems();
+    renderFavorites(getFavoriteItems());
+  } catch (error) {
+    console.error('Error loading favorites:', error);
+    alert('Error loading favorite items. Please try again.');
+  }
 });
 
 // Allow request from modal
 async function sendRequest(itemId) {
   const item = allItems.find(i => i.id === itemId);
   if (!item) return;
-  await sendRequestToOwner(itemId, item.owner, currentUser.uid, '');
+  
+  try {
+    await sendRequestToOwner(itemId, item.owner, currentUser.uid, '');
+    alert('Request sent!');
+  } catch (error) {
+    console.error('Error sending request:', error);
+    alert('Failed to send request. Please try again.');
+  }
 }

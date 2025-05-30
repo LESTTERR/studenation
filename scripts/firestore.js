@@ -84,40 +84,32 @@ export async function updateTradeOfferStatus(requestId, status, message = '') {
   }, { merge: true });
 }
 
+
+// Update the sendTradeOfferToOwner function
 export async function sendTradeOfferToOwner(itemId, imageUrl, description) {
-  console.log('sendTradeOfferToOwner called with:', { itemId, imageUrl, description });
-  
   const itemDoc = await getDoc(doc(db, 'items', itemId));
-  const itemData = itemDoc.exists() ? itemDoc.data() : null;
-  if (!itemData) {
-    console.error('Item not found:', itemId);
-    throw new Error('Item not found');
-  }
-
-  if (!itemData.owner) {
-    console.error('Item has no owner field:', itemData);
-    throw new Error('Item has no owner specified');
-  }
-
-  console.log('Creating trade offer from', auth.currentUser.uid, 'to', itemData.owner);
+  if (!itemDoc.exists()) throw new Error('Item not found');
   
-  const ref = collection(db, 'requests');
-  const result = await addDoc(ref, {
+  const itemData = itemDoc.data();
+  if (!itemData.owner) throw new Error('Item has no owner specified');
+
+  // CORRECTED: Store trade offer directly in the request
+  const requestData = {
     itemId,
     ownerId: itemData.owner,
     requesterId: auth.currentUser.uid,
-    type: 'exchange',
     status: 'pending',
-    createdAt: Date.now(),
-    tradeOfferImageUrl: imageUrl || null,
-    tradeOfferDescription: description || 'No description',
-    tradeOfferStatus: 'pending'
-  });
+    createdAt: new Date().toISOString(),
+    tradeOffer: {
+      imageUrl: imageUrl || null,
+      description: description || 'No description provided',
+      status: 'pending'
+    }
+  };
 
-  console.log('Trade offer created with ID:', result.id);
-  return result;
+  const ref = collection(db, 'requests');
+  return await addDoc(ref, requestData);
 }
-
 export async function deleteItem(itemId) {
   const ref = doc(db, 'items', itemId);
   return await deleteDoc(ref);

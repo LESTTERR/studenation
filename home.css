@@ -340,8 +340,9 @@ main.container {
   margin-left: 250px; /* Adjust based on your sidebar width */
   padding: 60px 30px;
   border-radius: 0 0 20px 20px;
-  background: linear-gradient(to right, #00c2ee, #0053a5);
-  color: white;
+    background: url('blue.jpg') no-repeat center center;
+background-size: cover;
+  color: rgb(255, 255, 255);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   text-align: left;
 }
@@ -365,7 +366,8 @@ main.container {
 }
 
 .hero-content p {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
+  font-weight: 500;
   margin-bottom: 25px;
   line-height: 1.6;
 }
@@ -709,4 +711,45 @@ textarea.form-control {
   color: white;
   border: none;
   cursor: pointer;
+}
+/* Trade Offer Modal Styles */
+.trade-offer-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.trade-image-container {
+  text-align: center;
+}
+
+.trade-image {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 4px;
+}
+
+.trade-details {
+  flex: 2;
+}
+
+.trade-message {
+  width: 100%;
+  min-height: 100px;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.modal.active {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
 }
